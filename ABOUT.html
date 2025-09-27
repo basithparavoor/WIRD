@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>About & Support — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* about.html specific styles */
+    .about-grid {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      max-width:820px;
+      margin:12px auto;
+      padding:12px;
+    }
+    .card-row { display:flex; gap:12px; flex-wrap:wrap; }
+    .small-card {
+      flex:1 1 220px;
+      background:var(--card);
+      padding:12px;
+      border-radius:12px;
+      box-shadow:0 10px 30px var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-width:160px;
+    }
+    .dev-logo {
+      width:72px;height:72px;border-radius:14px;background:linear-gradient(90deg,#6fb3ff,#8a6bff);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:20px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    }
+    .team-list { display:flex;flex-direction:column;gap:10px; }
+    .team-member { display:flex;gap:10px;align-items:center; }
+    .team-meta { color:var(--muted); font-size:0.95rem; }
+
+    .actions { display:flex;flex-wrap:wrap;gap:8px;margin-top:8px; }
+    .actions a, .actions button { text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; font-weight:700; }
+    .btn-primary { background:var(--accent-fallback); color:white; box-shadow:0 10px 30px rgba(60,110,170,0.12); border:0; }
+    .btn-ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text); }
+
+    .feedback-wrap { margin-top:12px; display:flex; flex-direction:column; gap:12px; }
+    .iframe-wrap { border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.04); box-shadow:0 8px 26px rgba(0,0,0,0.06); }
+
+    @media (max-width:600px){
+      .card-row { flex-direction:column; }
+      .small-card { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">About & Support</div>
+      <div class="controls">
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="about-grid">
+
+        <!-- Company / Hero -->
+        <div class="card" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="dev-logo">RM</div>
+            <div>
+              <div style="font-weight:800;font-size:1.05rem">RedMagic Technologies</div>
+              <div class="small-muted" style="margin-top:6px">Creators of AL-Adkar — a lightweight, privacy-first adkar & tasbih app.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center">
+            <a id="rateBtn" class="btn-primary" href="#" role="button">⭐ Rate on Play Store</a>
+            <a id="donateBtn" class="btn-ghost" href="#" role="button">💖 Donate</a>
+          </div>
+        </div>
+
+        <!-- Contact / Support / Feedback -->
+        <div class="card-row">
+          <div class="small-card">
+            <div style="font-weight:800">Contact</div>
+            <div class="team-meta">Email</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <a id="emailLink" href="mailto:support@redmagic.tech" class="ghost" style="padding:8px 10px;border-radius:8px">support@redmagic.tech</a>
+              <button id="copyEmail" class="ghost">Copy</button>
+            </div>
+            <div class="team-meta" style="margin-top:8px">Phone</div>
+            <a href="tel:+1234567890" class="ghost" style="padding:8px 10px;border-radius:8px;display:inline-block">+1 234 567 890</a>
+          </div>
+
+          <div class="small-card">
+            <div style="font-weight:800">Support</div>
+            <div class="small-muted">Common issues, FAQs, and troubleshooting help.</div>
+            <div class="actions">
+              <a id="helpCenter" class="btn-ghost" href="https://redmagic.tech/support" target="_blank" rel="noopener">📚 Help Center</a>
+              <a id="contactForm" class="btn-ghost" href="mailto:support@redmagic.tech?subject=AL-Adkar%20Support">✉️ Email Support</a>
+            </div>
+          </div>
+
+          <div class="small-card">
+            <div style="font-weight:800">Feedback</div>
+            <div class="small-muted">Use our Google Form for feature requests or bug reports.</div>
+            <div class="actions">
+              <button id="openFeedback" class="btn-primary">📝 Open Feedback Form</button>
+              <a id="externalForm" class="btn-ghost" href="#" target="_blank" rel="noopener">Open in browser</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team -->
+        <div class="card">
+          <div style="font-weight:800">Development Team</div>
+          <div class="team-list" style="margin-top:10px">
+            <div class="team-member">
+              <div style="width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,#7be8c5,#6fb3ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">AS</div>
+              <div>
+                <div style="font-weight:700">Ali Shah</div>
+                <div class="team-meta">Lead Developer</div>
+              </div>
+            </div>
+            <div class="team-member">
+              <div style="width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,#f6d365,#fda085);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">RA</div>
+              <div>
+                <div style="font-weight:700">Rana Ahmed</div>
+                <div class="team-meta">UI/UX Designer</div>
+              </div>
+            </div>
+            <div class="team-member">
+              <div style="width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,#c4b5fd,#6ee7b7);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">SM</div>
+              <div>
+                <div style="font-weight:700">Sara Mir</div>
+                <div class="team-meta">QA & Support</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legal / Privacy -->
+        <div class="card small-card">
+          <div style="font-weight:800">Privacy</div>
+          <div class="small-muted" style="margin-top:8px">AL-Adkar stores data locally on the device. No personal data is transmitted. See our privacy policy for details.</div>
+          <a href="https://redmagic.tech/privacy" class="ghost" target="_blank" rel="noopener" style="margin-top:8px">View privacy policy</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer small-muted">Made with ♥ by RedMagic Technologies</footer>
+  </div>
+
+  <!-- Theme + shared utilities -->
+  <script src="common.js"></script>
+  <script>
+    (function(){
+      // Ensure theme is applied on load and when changed
+      const THEME_KEY = (typeof LS_KEYS !== 'undefined' && LS_KEYS.theme) ? LS_KEYS.theme : 'theme_v1';
+      function applyTheme(){
+        const val = localStorage.getItem(THEME_KEY) || 'dark';
+        if(val === 'light') document.documentElement.classList.add('light');
+        else document.documentElement.classList.remove('light');
+      }
+      applyTheme();
+      window.addEventListener('storage', e => { if(e.key===THEME_KEY) applyTheme(); });
+
+      // Replace links with your real ones
+      const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.yourapp.package';
+      const DONATE_URL = 'https://www.paypal.com/donate?hosted_button_id=YOUR_BUTTON_ID';
+      const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform';
+
+      document.getElementById('rateBtn').href = PLAY_STORE_URL;
+      document.getElementById('donateBtn').href = DONATE_URL;
+      document.getElementById('externalForm').href = FEEDBACK_FORM_URL;
+      document.getElementById('openFeedback').addEventListener('click', ()=> window.open(FEEDBACK_FORM_URL,'_blank','noopener'));
+
+      // Copy email
+      document.getElementById('copyEmail').addEventListener('click', async ()=>{
+        const email = 'support@redmagic.tech';
+        try {
+          await navigator.clipboard.writeText(email);
+          alert('Email copied: ' + email);
+        } catch(e){
+          alert('Copy failed. Please copy manually.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

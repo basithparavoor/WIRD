@@ -6,7 +6,6 @@
   <title>Options — AL-Adkar</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Options page — square card grid with icons */
     .options-grid {
       display:grid;
       grid-template-columns: repeat(2, 1fr);
@@ -18,10 +17,9 @@
     }
 
     .option-card {
-      --card-pad:16px;
       background: var(--card);
       border-radius:14px;
-      padding:var(--card-pad);
+      padding:16px;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -35,8 +33,6 @@
       transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms, background 220ms;
       user-select:none;
     }
-
-    .option-card:active { transform: translateY(1px) scale(.998); }
     .option-card:hover { transform: translateY(-8px); box-shadow: 0 22px 46px rgba(2,6,23,0.18); }
 
     .option-icon {
@@ -46,14 +42,13 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:26px;
       box-shadow: 0 8px 18px rgba(2,6,23,0.06);
       background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     }
+    .option-icon svg { width:28px; height:28px; fill:currentColor; }
 
     .option-label { font-weight:800; text-align:center; font-size:0.98rem; }
 
-    /* theme toggle specific */
     .theme-actions { display:flex; gap:8px; align-items:center; margin-top:6px; }
     .theme-button {
       padding:8px 12px; border-radius:10px; border:0; font-weight:700;
@@ -61,13 +56,26 @@
       box-shadow: 0 6px 18px rgba(2,6,23,0.06);
     }
 
-    /* make a single column on small screens */
+    .about-card {
+      grid-column: 1 / -1;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px;
+      min-height:120px;
+      border-radius:12px;
+    }
+    .about-card .left { display:flex; gap:12px; align-items:center; }
+    .about-card svg { width:32px; height:32px; fill:currentColor; }
+    .about-card .desc { color:var(--muted); max-width:720px; }
+
     @media (max-width:520px) {
       .options-grid { grid-template-columns: 1fr; gap:12px; padding:12px; }
       .option-card { min-height:110px; }
+      .about-card { flex-direction:column; align-items:flex-start; }
     }
 
-    /* subtle caption under grid */
     .options-footer { text-align:center; margin-top:12px; color:var(--muted); font-size:0.95rem; }
   </style>
 </head>
@@ -75,63 +83,70 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">Options</div>
-
+      <div class="controls">
+        <a href="index.html" class="icon-btn" title="Home">
+          <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+        </a>
+        <a href="settings.html" class="icon-btn" title="Settings">
+          <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.43 12.98l1.34-2.32-1.66-2.87-2.62.49a7.042 7.042 0 0 0-1.52-.88l-.4-2.65H9.43l-.4 2.65c-.54.2-1.05.48-1.52.88l-2.62-.49-1.66 2.87 1.34 2.32c-.05.33-.07.67-.07 1.02s.02.69.07 1.02l-1.34 2.32 1.66 2.87 2.62-.49c.47.4.98.68 1.52.88l.4 2.65h5.14l.4-2.65c.54-.2 1.05-.48 1.52-.88l2.62.49 1.66-2.87-1.34-2.32c.05-.33.07-.67.07-1.02s-.02-.69-.07-1.02z"/></svg>
+        </a>
+      </div>
     </header>
 
     <main class="container">
-      <div class="options-grid" role="grid" aria-label="App options">
+      <div class="options-grid">
         <!-- Home -->
-        <a class="option-card" href="index.html" role="gridcell" title="Home">
-          <div class="option-icon">🏠</div>
+        <a class="option-card" href="index.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"/></svg></div>
           <div class="option-label">Home</div>
           <div class="small-muted">Today's adkars</div>
         </a>
 
         <!-- Yesterday -->
-        <a class="option-card" href="yesterday.html" role="gridcell" title="Yesterday">
-          <div class="option-icon">⏳</div>
+        <a class="option-card" href="yesterday.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M12 8V4l8 8-8 8v-4H4V8z"/></svg></div>
           <div class="option-label">Yesterday</div>
           <div class="small-muted">Uncompleted from yesterday</div>
         </a>
 
         <!-- Other -->
-        <a class="option-card" href="other.html" role="gridcell" title="Other adkars">
-          <div class="option-icon">📚</div>
-          <div class="option-label">Other</div>
-          <div class="small-muted">Search & browse</div>
+        <a class="option-card" href="other.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/></svg></div>
+          <div class="option-label">Library</div>
+          <div class="small-muted">Adkar library</div>
         </a>
 
         <!-- Completed -->
-        <a class="option-card" href="completed.html" role="gridcell" title="Completed">
-          <div class="option-icon">✅</div>
+        <a class="option-card" href="completed.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19.2l12-12-1.5-1.5z"/></svg></div>
           <div class="option-label">Completed</div>
           <div class="small-muted">Today's completed</div>
         </a>
 
         <!-- Add -->
-        <a class="option-card" href="add.html" role="gridcell" title="Add adkar">
-          <div class="option-icon">＋</div>
+        <a class="option-card" href="add.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M19 11H13V5h-2v6H5v2h6v6h2v-6h6z"/></svg></div>
           <div class="option-label">Add Adkar</div>
           <div class="small-muted">Create new item</div>
         </a>
 
         <!-- Tasbih -->
-        <a class="option-card" href="tasbih.html" role="gridcell" title="Tasbih counter">
-          <div class="option-icon">📿</div>
+        <a class="option-card" href="tasbih.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 3.9 3.1 7 7 7s7-3.1 7-7a7 7 0 0 0-7-7zm0 16a9 9 0 0 1-9-9H1a11 11 0 1 0 11 11v-2z"/></svg></div>
           <div class="option-label">Tasbih</div>
           <div class="small-muted">Counter & sessions</div>
         </a>
 
         <!-- Settings -->
-        <a class="option-card" href="settings.html" role="gridcell" title="Settings">
-          <div class="option-icon">⚙️</div>
+        <a class="option-card" href="settings.html">
+          <div class="option-icon"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.43 12.98l1.34-2.32-1.66-2.87-2.62.49a7.042 7.042 0 0 0-1.52-.88l-.4-2.65H9.43l-.4 2.65c-.54.2-1.05.48-1.52.88l-2.62-.49-1.66 2.87 1.34 2.32c-.05.33-.07.67-.07 1.02s.02.69.07 1.02l-1.34 2.32 1.66 2.87 2.62-.49c.47.4.98.68 1.52.88l.4 2.65h5.14l.4-2.65c.54-.2 1.05-.48 1.52-.88l2.62.49 1.66-2.87-1.34-2.32c.05-.33.07-.67.07-1.02s-.02-.69-.07-1.02z"/></svg></div>
           <div class="option-label">Settings</div>
           <div class="small-muted">Font, reset, storage</div>
         </a>
 
         <!-- Theme -->
-        <div class="option-card" role="gridcell" id="themeCard" style="cursor:default" title="Theme">
-          <div class="option-icon" id="themeIcon">🌙</div>
+        <div class="option-card" id="themeCard" style="cursor:default">
+          <div class="option-icon"><svg id="themeIcon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 1 0-18z"/></svg></div>
           <div class="option-label" id="themeLabel">Theme</div>
           <div class="theme-actions">
             <button id="themeToggle" class="theme-button">Toggle</button>
@@ -139,6 +154,17 @@
             <button id="themeDark" class="theme-button">Dark</button>
           </div>
         </div>
+
+        <!-- About -->
+        <a class="option-card about-card" href="about.html">
+          <div class="left">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20zm0 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 1 1 0-3zm1 10h-2v-6h2v6z"/></svg>
+            <div>
+              <div style="font-weight:900;font-size:1.05rem">About & Support</div>
+              <div class="desc small-muted">Company, team, contact, support & feedback</div>
+            </div>
+          </div>
+        </a>
       </div>
 
       <div class="options-footer">Tap a card to open that page. Theme can also be changed here.</div>
@@ -149,12 +175,8 @@
 
   <script src="common.js"></script>
   <script>
-    // Use the same theme key as common.js (LS_KEYS.theme -> 'theme_v1')
-    // LS_KEYS is defined in common.js and available globally.
     (function(){
-      // safe fallback if LS_KEYS isn't defined (defensive)
       const THEME_KEY = (typeof LS_KEYS !== 'undefined' && LS_KEYS.theme) ? LS_KEYS.theme : 'theme_v1';
-
       const themeToggle = document.getElementById('themeToggle');
       const themeLight = document.getElementById('themeLight');
       const themeDark = document.getElementById('themeDark');
@@ -164,32 +186,22 @@
       function applyVisual(theme){
         if(theme === 'light'){
           document.documentElement.classList.add('light');
-          themeIcon.textContent = '🌤️';
           themeLabel.textContent = 'Light';
+          themeIcon.innerHTML = '<path d="M6.76 4.84l-1.8-1.79-1.42 1.41 1.79 1.8 1.43-1.42zM1 13h3v-2H1v2zm10-9h-2v3h2V4zm7.66 2.05l-1.41-1.41-1.8 1.79 1.41 1.41 1.8-1.79zM17 13h3v-2h-3v2zm-5 5h-2v3h2v-3zm-7.66-2.05l1.41 1.41 1.8-1.79-1.41-1.41-1.8 1.79zM20 17.99l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM12 6a6 6 0 1 1 0 12 6 6 0 1 1 0-12z"/>';
         } else {
           document.documentElement.classList.remove('light');
-          themeIcon.textContent = '🌙';
           themeLabel.textContent = 'Dark';
+          themeIcon.innerHTML = '<path d="M9.37 5.51A7 7 0 1 0 18.49 14.63 9 9 0 1 1 9.37 5.51z"/>';
         }
       }
+      function getStored(){ return localStorage.getItem(THEME_KEY) || 'dark'; }
+      function setStored(t){ localStorage.setItem(THEME_KEY, t); applyVisual(t); }
 
-      function getStored(){
-        return localStorage.getItem(THEME_KEY) || 'dark';
-      }
-      function setStored(t){
-        localStorage.setItem(THEME_KEY, t);
-        applyVisual(t);
-      }
-
-      // init from storage (or common.js already applied)
       applyVisual(getStored());
-
-      themeToggle.addEventListener('click', ()=>{
-        const next = getStored() === 'light' ? 'dark' : 'light';
-        setStored(next);
-      });
+      themeToggle.addEventListener('click', ()=> setStored(getStored()==='light'?'dark':'light'));
       themeLight.addEventListener('click', ()=> setStored('light'));
       themeDark.addEventListener('click', ()=> setStored('dark'));
+      window.addEventListener('storage', e=>{ if(e.key===THEME_KEY) applyVisual(e.newValue||'dark'); });
     })();
   </script>
 </body>
