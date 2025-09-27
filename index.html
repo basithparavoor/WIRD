@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Adkar — Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">AL-Adkar</div>
+      <div class="controls">
+    <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2>Uncompleted Adkars — Today</h2>
+      <div id="homeList" class="list"></div>
+      <p class="muted">Tap an Adkar to view details. Long recitations have a "Recite" option that opens a dedicated recite page.</p>
+    </main>
+
+    <div id="detailModal" class="modal" role="dialog" aria-hidden="true">
+      <div class="modal-card">
+        <button class="modal-close" id="closeModal">✕</button>
+        <h3 id="detailTitle"></h3>
+        <p id="detailBody"></p>
+        <div class="modal-actions">
+          <button id="openRecite" class="primary hidden">Open Recite</button>
+          <button id="markComplete" class="primary">Mark as complete</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer small-muted">Local-only • No backend • Smartphone-first</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  // Home page logic
+  (function(){
+    const homeList = document.getElementById('homeList');
+    const detailModal = document.getElementById('detailModal');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailBody = document.getElementById('detailBody');
+    const closeModal = document.getElementById('closeModal');
+    const markComplete = document.getElementById('markComplete');
+    const openRecite = document.getElementById('openRecite');
+    let currentId = null;
+
+    function render(){
+      const all = loadAdkars();
+      const today = todayStr();
+      const items = all.filter(x => !x.completed && x.date === today);
+      homeList.innerHTML = '';
+      if(items.length===0){
+        homeList.innerHTML = '<div class="card"><div class="title">No uncompleted adkars for today — good!</div></div>';
+        return;
+      }
+      for(const it of items){
+        const el = document.createElement('div'); el.className='card';
+        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div><div class="meta">${it.category}</div>`;
+        el.addEventListener('click', ()=> openItem(it));
+        homeList.appendChild(el);
+      }
+    }
+
+    function openItem(it){
+      currentId = it.id;
+      detailTitle.textContent = it.title;
+      detailBody.textContent = it.details || '—';
+      if(it.type === 'recite' || (it.details && it.details.length>120)){
+        openRecite.classList.remove('hidden');
+        openRecite.onclick = ()=> {
+          // open recite page with id
+          location.href = 'recite.html?id=' + encodeURIComponent(it.id);
+        };
+      } else {
+        openRecite.classList.add('hidden');
+      }
+      detailModal.classList.add('active');
+    }
+
+    closeModal.addEventListener('click', ()=> { detailModal.classList.remove('active'); currentId=null; });
+    markComplete.addEventListener('click', ()=>{
+      if(!currentId) return;
+      const all = loadAdkars();
+      const it = all.find(x=>x.id===currentId);
+      if(it){ it.completed = true; saveAdkars(all); render(); detailModal.classList.remove('active'); }
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

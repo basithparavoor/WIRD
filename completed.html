@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Completed — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">AL-Adkar</div>
+      <div class="controls">
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2>Completed Adkars — Today</h2>
+      <div id="completedList" class="list"></div>
+      <p class="muted">Completed items are stored for today and clear at 00:00 local time.</p>
+    </main>
+
+
+    <footer class="footer small-muted">Local-only • No backend</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  (function(){
+    const completedList = document.getElementById('completedList');
+
+    function render(){
+      const all = loadAdkars();
+      // completed items are those with completed === true
+      const items = all.filter(x => x.completed);
+      completedList.innerHTML = '';
+      if(items.length === 0){
+        completedList.innerHTML = '<div class="card"><div class="title">No completed adkars for today.</div></div>';
+        return;
+      }
+      for(const it of items){
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div>
+                        <div class="meta">${it.date} • ${it.category}</div>`;
+        // show details on click
+        el.addEventListener('click', ()=> {
+          const details = it.details || '—';
+          if(it.type === 'recite' || (details && details.length > 120)){
+            if(confirm('Open in Recite page?')) {
+              location.href = 'recite.html?id=' + encodeURIComponent(it.id);
+              return;
+            }
+          }
+          alert(it.title + "\\n\\n" + details);
+        });
+        completedList.appendChild(el);
+      }
+    }
+
+    render();
+  })();
+  </script>
+</body>
+</html>

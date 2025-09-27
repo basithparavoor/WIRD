@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Tasbih — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* page-specific */
+    .tasbih-plate { display:flex; flex-direction:column; gap:12px; align-items:center; padding-top:6px; }
+    .big-counter {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 48px;
+      font-weight:800;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      box-shadow: 0 12px 30px rgba(2,6,23,0.18);
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 180ms;
+    }
+    .big-counter:active { transform: scale(.98); box-shadow: 0 8px 22px rgba(2,6,23,0.14); }
+
+    .controls-row { display:flex; gap:10px; width:100%; justify-content:center; }
+    .controls-row button { flex:1; min-width: 0; }
+
+    .progress-wrap { width:100%; max-width:320px; }
+    .progress-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      overflow:hidden;
+    }
+    .progress-bar > i {
+      display:block;
+      height:100%;
+      width:0%;
+      background-image: var(--accent);
+      background-color: var(--accent-fallback);
+      transition: width 320ms ease;
+    }
+
+    .history-list { display:flex;flex-direction:column;gap:8px; margin-top:8px; }
+    .history-item { display:flex;justify-content:space-between;align-items:center; gap:12px; padding:8px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); }
+    .history-item .badge { padding:6px 8px;border-radius:999px;font-weight:700;font-size:0.8rem; }
+    .badge.completed { background: linear-gradient(90deg,#10b981,#3b82f6); color:#fff; }
+    .badge.incomplete { background: rgba(255,255,255,0.04); color: var(--muted); border:1px solid rgba(255,255,255,0.03); }
+
+    .small-actions { display:flex; gap:8px; align-items:center; }
+    .form-card { width:100%; max-width:420px; padding:12px; border-radius:12px; }
+    .inline-row { display:flex; gap:8px; align-items:center; }
+    .tabs { display:flex; gap:8px; margin-bottom:10px; }
+    .tab { flex:1; text-align:center; padding:8px 10px; border-radius:10px; background:var(--panel); cursor:pointer; font-weight:700; }
+    .tab.active { box-shadow:0 10px 30px rgba(2,6,23,0.12); transform: translateY(-4px); }
+    /* center the reset button specifically */
+    .reset-centered { display:flex; justify-content:center; width:100%; margin-top:6px; }
+    .reset-centered button { min-width:140px; }
+
+    @media (max-width:420px) {
+      .big-counter { width: 140px; height:140px; font-size:40px; }
+      .reset-centered button { min-width:120px; }
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">Tasbih</div>
+      <div class="controls">
+ <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Start form (visible until user starts/resumes session) -->
+      <div id="startArea" class="card form-card" aria-hidden="false">
+        <h2 style="margin-top:0">Start Tasbih</h2>
+        <div class="field">
+          <label>Goal (required)
+            <input id="goalInput" type="number" min="1" placeholder="e.g., 33 or 100" />
+          </label>
+          <label>Session name (optional)
+            <input id="sessionName" type="text" placeholder="e.g., Morning Tasbih" />
+          </label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="startBtn" class="primary" style="flex:1">Start</button>
+            <button id="cancelStart" class="ghost" style="flex:1">Cancel</button>
+          </div>
+          <p class="small-muted" style="margin-top:8px">If you have an unfinished session, the form will be prefilled and the button will say "Resume".</p>
+        </div>
+      </div>
+
+      <!-- Counter + Tabs -->
+      <div id="counterWrapper" class="hidden" aria-hidden="true">
+        <div class="tabs">
+          <div id="tabCounter" class="tab active">Counter</div>
+          <div id="tabHistory" class="tab">History</div>
+        </div>
+
+        <div id="counterArea" class="tasbih-plate" aria-hidden="false" style="display:block;">
+          <!-- readonly metadata -->
+          <div class="inline-row" style="width:100%;max-width:420px;justify-content:space-between">
+            <div style="flex:1;margin-right:8px">
+              <label style="display:block;font-weight:600;margin-bottom:6px">Goal</label>
+              <input id="goalDisplay" type="number" min="1" readonly />
+            </div>
+            <div style="width:160px">
+              <label style="display:block;font-weight:600;margin-bottom:6px">Session</label>
+              <input id="sessionDisplay" type="text" readonly />
+            </div>
+          </div>
+
+          <div id="bigCounter" class="big-counter" aria-label="Tasbih counter" role="button" tabindex="0">0</div>
+
+          <div class="progress-wrap">
+            <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px">
+              <div id="progressText">0 / 0</div>
+              <div id="progressPercent">0%</div>
+            </div>
+            <div class="progress-bar" aria-hidden="true"><i id="progressFill"></i></div>
+          </div>
+
+          <!-- Reset centered (only control under counter) -->
+          <div class="reset-centered">
+            <button id="reset" class="ghost">Reset</button>
+          </div>
+
+          <div style="display:flex;gap:8px;width:100%;max-width:420px;margin-top:8px">
+            <button id="saveSession" class="primary" style="flex:1">Save session</button>
+            <button id="endSession" class="ghost" style="flex:1">End session</button>
+          </div>
+        </div>
+
+        <!-- History tab content -->
+        <div id="historyArea" class="card hidden" style="display:none; padding:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0">History</h3>
+            <div style="display:flex;gap:8px">
+              <button id="clearAllHistory" class="ghost">Clear All</button>
+            </div>
+          </div>
+          <div id="history" class="history-list"></div>
+        </div>
+      </div>
+    </main>
+
+    
+
+    <footer class="footer small-muted">Tasbih counter • Local-only</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+    (function(){
+      // Keys
+      const LIVE_KEY = 'tasbih_current_v1';
+      const SESS_KEY = 'tasbih_sessions_v1';
+
+      // Elements
+      const startArea = document.getElementById('startArea');
+      const counterWrapper = document.getElementById('counterWrapper');
+      const startBtn = document.getElementById('startBtn');
+      const cancelStart = document.getElementById('cancelStart');
+      const goalInput = document.getElementById('goalInput');
+      const sessionName = document.getElementById('sessionName');
+
+      const tabCounter = document.getElementById('tabCounter');
+      const tabHistory = document.getElementById('tabHistory');
+      const counterArea = document.getElementById('counterArea');
+      const historyArea = document.getElementById('historyArea');
+
+      const big = document.getElementById('bigCounter');
+      const resetBtn = document.getElementById('reset');
+      const goalDisplay = document.getElementById('goalDisplay');
+      const sessionDisplay = document.getElementById('sessionDisplay');
+      const progressText = document.getElementById('progressText');
+      const progressFill = document.getElementById('progressFill');
+      const progressPercent = document.getElementById('progressPercent');
+      const saveBtn = document.getElementById('saveSession');
+      const endBtn = document.getElementById('endSession');
+      const historyEl = document.getElementById('history');
+      const clearAllHistory = document.getElementById('clearAllHistory');
+
+      // state
+      let state = { count: 0, goal: 33, name: '' };
+
+      // storage helpers
+      function loadLive(){
+        try {
+          const raw = localStorage.getItem(LIVE_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch(e){ return null; }
+      }
+      function saveLive(){
+        localStorage.setItem(LIVE_KEY, JSON.stringify(state));
+      }
+      function clearLive(){
+        localStorage.removeItem(LIVE_KEY);
+      }
+
+      function loadSessions(){
+        try {
+          const r = localStorage.getItem(SESS_KEY);
+          return r ? JSON.parse(r) : [];
+        } catch(e){ return []; }
+      }
+      function saveSessions(list){
+        localStorage.setItem(SESS_KEY, JSON.stringify(list));
+      }
+
+      // UI helpers
+      function showStart(){
+        startArea.classList.remove('hidden');
+        counterWrapper.classList.add('hidden');
+        startArea.setAttribute('aria-hidden','false');
+        counterWrapper.setAttribute('aria-hidden','true');
+      }
+      function showCounterAndTab(tab){
+        // show wrapper and specific tab
+        startArea.classList.add('hidden');
+        counterWrapper.classList.remove('hidden');
+        startArea.setAttribute('aria-hidden','true');
+        counterWrapper.setAttribute('aria-hidden','false');
+        // toggle tabs
+        tabCounter.classList.remove('active');
+        tabHistory.classList.remove('active');
+        counterArea.style.display = 'none';
+        historyArea.style.display = 'none';
+        if(tab === 'counter'){
+          tabCounter.classList.add('active');
+          counterArea.style.display = 'block';
+        } else {
+          tabHistory.classList.add('active');
+          historyArea.style.display = 'block';
+        }
+      }
+
+      // render
+      function render(){
+        big.textContent = String(state.count);
+        goalDisplay.value = state.goal;
+        sessionDisplay.value = state.name || '';
+        progressText.textContent = `${state.count} / ${state.goal}`;
+        const pct = Math.min(100, Math.round((state.count / Math.max(1, state.goal)) * 100));
+        progressPercent.textContent = pct + '%';
+        progressFill.style.width = pct + '%';
+        if(state.count >= state.goal){
+          big.classList.add('new');
+          setTimeout(()=> big.classList.remove('new'), 900);
+        }
+        renderHistory(); // keep history updated
+      }
+
+      function renderHistory(){
+        const sessions = loadSessions();
+        historyEl.innerHTML = '';
+        if(sessions.length === 0){
+          historyEl.innerHTML = '<div class="small-muted">No saved sessions yet.</div>';
+          return;
+        }
+        for(let i = sessions.length - 1; i >= 0; i--){
+          const s = sessions[i];
+          const isCompleted = (s.count >= (s.goal || 0));
+          const row = document.createElement('div');
+          row.className = 'history-item';
+          row.innerHTML = `<div>
+                             <div style="font-weight:700">${escapeHtml(s.name || 'Session')}</div>
+                             <div class="small-muted">${new Date(s.t).toLocaleString()}</div>
+                           </div>
+                           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                             <div style="font-weight:800">${s.count} / ${s.goal}</div>
+                             <div style="display:flex;gap:8px;align-items:center">
+                               <div class="badge ${isCompleted ? 'completed' : 'incomplete'}">${isCompleted ? 'Completed' : 'Incomplete'}</div>
+                               <div class="small-actions">
+                                 <button class="ghost" data-restore="${s.id}">Restore</button>
+                                 <button class="ghost" data-delete="${s.id}">Delete</button>
+                               </div>
+                             </div>
+                           </div>`;
+          row.querySelector('[data-restore]')?.addEventListener('click', ()=>{
+            // restore session into live (read-only goal/name)
+            state.count = s.count;
+            state.goal = s.goal || state.goal;
+            state.name = s.name || state.name;
+            saveLive();
+            render();
+            showCounterAndTab('counter');
+            // scroll to top for better view
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          row.querySelector('[data-delete]')?.addEventListener('click', ()=>{
+            if(!confirm('Delete this saved session?')) return;
+            const all = loadSessions().filter(x => x.id !== s.id);
+            saveSessions(all);
+            renderHistory();
+          });
+          historyEl.appendChild(row);
+        }
+      }
+
+      // actions
+      function increment(){
+        if(state.count >= state.goal){
+          alert('Goal reached');
+          return;
+        }
+        state.count += 1;
+        saveLive();
+        render();
+        if(window.navigator && navigator.vibrate) {
+          try { navigator.vibrate(15); } catch(e){}
+        }
+      }
+      function resetCounter(){
+        if(!confirm('Reset counter to zero?')) return;
+        state.count = 0;
+        saveLive();
+        render();
+      }
+      function saveSession(){
+        const sessions = loadSessions();
+        const id = 't' + Date.now();
+        const s = {
+          id,
+          name: state.name || (state.count >= state.goal ? 'Completed' : 'Session'),
+          count: state.count,
+          goal: state.goal,
+          t: Date.now()
+        };
+        sessions.push(s);
+        saveSessions(sessions);
+        // reset live session after saving
+        state.count = 0;
+        saveLive();
+        render();
+        alert('Session saved.');
+      }
+      function endSession(){
+        if(!confirm('End this session and clear the live counter?')) return;
+        clearLive();
+        state = { count:0, goal:33, name:'' };
+        render();
+        showStart();
+      }
+
+      // start/resume handling: show form, prefill if live session exists
+      function initStartForm(){
+        const live = loadLive();
+        if(live && typeof live.goal === 'number'){
+          // prefill and set button to Resume
+          goalInput.value = live.goal;
+          sessionName.value = live.name || '';
+          startBtn.textContent = 'Resume';
+        } else {
+          startBtn.textContent = 'Start';
+        }
+      }
+
+      startBtn.addEventListener('click', ()=>{
+        const g = parseInt(goalInput.value);
+        if(!g || g <= 0){ alert('Please enter a valid goal (e.g., 33)'); return; }
+        // configure state
+        const live = loadLive();
+        if(live && typeof live.count === 'number' && (live.goal === g) && (live.name === (sessionName.value.trim() || ''))){
+          // same live session (matching goal & name) -> resume with existing count
+          state = { count: live.count || 0, goal: live.goal, name: live.name || '' };
+        } else if(live && typeof live.count === 'number' && live.goal === g && !sessionName.value.trim()){
+          // live exists with same goal and name empty: adopt live's name
+          state = { count: live.count || 0, goal: live.goal, name: live.name || '' };
+        } else {
+          // new / different session: start fresh
+          state = { count: 0, goal: g, name: sessionName.value.trim() || '' };
+        }
+        saveLive();
+        render();
+        // show counter only after clicking Start/Resume
+        showCounterAndTab('counter');
+      });
+
+      cancelStart.addEventListener('click', ()=>{
+        // go back to home
+        location.href = 'index.html';
+      });
+
+      // tab interactions
+      tabCounter.addEventListener('click', ()=> showCounterAndTab('counter'));
+      tabHistory.addEventListener('click', ()=> showCounterAndTab('history'));
+
+      // listeners
+      resetBtn.addEventListener('click', resetCounter);
+      saveBtn.addEventListener('click', saveSession);
+      endBtn.addEventListener('click', endSession);
+      clearAllHistory.addEventListener('click', ()=>{
+        if(!confirm('Clear all saved tasbih history?')) return;
+        localStorage.removeItem(SESS_KEY);
+        renderHistory();
+      });
+
+      // big counter is the only increment control now
+      big.addEventListener('click', increment);
+      big.addEventListener('keydown', (e) => {
+        if(e.key === ' ' || e.key === 'Enter') { e.preventDefault(); increment(); }
+      });
+
+      // init
+      (function boot(){
+        const live = loadLive();
+        if(live && (typeof live.goal === 'number')) {
+          // Prefill form with live session but do NOT auto-show counter.
+          goalInput.value = live.goal;
+          sessionName.value = live.name || '';
+          startBtn.textContent = 'Resume';
+          // keep state set to live for render preview
+          state = { count: live.count || 0, goal: live.goal, name: live.name || '' };
+          initStartForm();
+          showStart();
+        } else {
+          // no live session -> show start form
+          state = { count:0, goal:33, name:'' };
+          initStartForm();
+          showStart();
+        }
+        render();
+      })();
+
+    })();
+  </script>
+</body>
+</html>

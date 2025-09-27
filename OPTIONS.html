@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Options — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Options page — square card grid with icons */
+    .options-grid {
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:12px;
+      max-width:920px;
+      margin:18px auto;
+      width:100%;
+      padding:6px;
+    }
+
+    .option-card {
+      --card-pad:16px;
+      background: var(--card);
+      border-radius:14px;
+      padding:var(--card-pad);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-decoration:none;
+      color:var(--text);
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+      min-height:120px;
+      transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms, background 220ms;
+      user-select:none;
+    }
+
+    .option-card:active { transform: translateY(1px) scale(.998); }
+    .option-card:hover { transform: translateY(-8px); box-shadow: 0 22px 46px rgba(2,6,23,0.18); }
+
+    .option-icon {
+      width:56px;
+      height:56px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:26px;
+      box-shadow: 0 8px 18px rgba(2,6,23,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    }
+
+    .option-label { font-weight:800; text-align:center; font-size:0.98rem; }
+
+    /* theme toggle specific */
+    .theme-actions { display:flex; gap:8px; align-items:center; margin-top:6px; }
+    .theme-button {
+      padding:8px 12px; border-radius:10px; border:0; font-weight:700;
+      background: var(--panel);
+      box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+    }
+
+    /* make a single column on small screens */
+    @media (max-width:520px) {
+      .options-grid { grid-template-columns: 1fr; gap:12px; padding:12px; }
+      .option-card { min-height:110px; }
+    }
+
+    /* subtle caption under grid */
+    .options-footer { text-align:center; margin-top:12px; color:var(--muted); font-size:0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">Options</div>
+
+    </header>
+
+    <main class="container">
+      <div class="options-grid" role="grid" aria-label="App options">
+        <!-- Home -->
+        <a class="option-card" href="index.html" role="gridcell" title="Home">
+          <div class="option-icon">🏠</div>
+          <div class="option-label">Home</div>
+          <div class="small-muted">Today's adkars</div>
+        </a>
+
+        <!-- Yesterday -->
+        <a class="option-card" href="yesterday.html" role="gridcell" title="Yesterday">
+          <div class="option-icon">⏳</div>
+          <div class="option-label">Yesterday</div>
+          <div class="small-muted">Uncompleted from yesterday</div>
+        </a>
+
+        <!-- Other -->
+        <a class="option-card" href="other.html" role="gridcell" title="Other adkars">
+          <div class="option-icon">📚</div>
+          <div class="option-label">Other</div>
+          <div class="small-muted">Search & browse</div>
+        </a>
+
+        <!-- Completed -->
+        <a class="option-card" href="completed.html" role="gridcell" title="Completed">
+          <div class="option-icon">✅</div>
+          <div class="option-label">Completed</div>
+          <div class="small-muted">Today's completed</div>
+        </a>
+
+        <!-- Add -->
+        <a class="option-card" href="add.html" role="gridcell" title="Add adkar">
+          <div class="option-icon">＋</div>
+          <div class="option-label">Add Adkar</div>
+          <div class="small-muted">Create new item</div>
+        </a>
+
+        <!-- Tasbih -->
+        <a class="option-card" href="tasbih.html" role="gridcell" title="Tasbih counter">
+          <div class="option-icon">📿</div>
+          <div class="option-label">Tasbih</div>
+          <div class="small-muted">Counter & sessions</div>
+        </a>
+
+        <!-- Settings -->
+        <a class="option-card" href="settings.html" role="gridcell" title="Settings">
+          <div class="option-icon">⚙️</div>
+          <div class="option-label">Settings</div>
+          <div class="small-muted">Font, reset, storage</div>
+        </a>
+
+        <!-- Theme -->
+        <div class="option-card" role="gridcell" id="themeCard" style="cursor:default" title="Theme">
+          <div class="option-icon" id="themeIcon">🌙</div>
+          <div class="option-label" id="themeLabel">Theme</div>
+          <div class="theme-actions">
+            <button id="themeToggle" class="theme-button">Toggle</button>
+            <button id="themeLight" class="theme-button">Light</button>
+            <button id="themeDark" class="theme-button">Dark</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="options-footer">Tap a card to open that page. Theme can also be changed here.</div>
+    </main>
+
+    <footer class="footer small-muted">Options • AL-Adkar</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+    // Use the same theme key as common.js (LS_KEYS.theme -> 'theme_v1')
+    // LS_KEYS is defined in common.js and available globally.
+    (function(){
+      // safe fallback if LS_KEYS isn't defined (defensive)
+      const THEME_KEY = (typeof LS_KEYS !== 'undefined' && LS_KEYS.theme) ? LS_KEYS.theme : 'theme_v1';
+
+      const themeToggle = document.getElementById('themeToggle');
+      const themeLight = document.getElementById('themeLight');
+      const themeDark = document.getElementById('themeDark');
+      const themeIcon = document.getElementById('themeIcon');
+      const themeLabel = document.getElementById('themeLabel');
+
+      function applyVisual(theme){
+        if(theme === 'light'){
+          document.documentElement.classList.add('light');
+          themeIcon.textContent = '🌤️';
+          themeLabel.textContent = 'Light';
+        } else {
+          document.documentElement.classList.remove('light');
+          themeIcon.textContent = '🌙';
+          themeLabel.textContent = 'Dark';
+        }
+      }
+
+      function getStored(){
+        return localStorage.getItem(THEME_KEY) || 'dark';
+      }
+      function setStored(t){
+        localStorage.setItem(THEME_KEY, t);
+        applyVisual(t);
+      }
+
+      // init from storage (or common.js already applied)
+      applyVisual(getStored());
+
+      themeToggle.addEventListener('click', ()=>{
+        const next = getStored() === 'light' ? 'dark' : 'light';
+        setStored(next);
+      });
+      themeLight.addEventListener('click', ()=> setStored('light'));
+      themeDark.addEventListener('click', ()=> setStored('dark'));
+    })();
+  </script>
+</body>
+</html>

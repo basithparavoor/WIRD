@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Settings — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">Settings</div>
+      <div class="controls">
+       <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2>App Settings</h2>
+      <div class="field">
+        <label>Theme
+          <select id="themeSelect">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </label>
+
+        <label>Font size
+          <select id="fontSelect">
+            <option value="0.9">Small</option>
+            <option value="1" selected>Normal</option>
+            <option value="1.1">Large</option>
+            <option value="1.25">Extra Large</option>
+          </select>
+        </label>
+
+        <label>Reset storage
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="resetBtn" class="primary" style="flex:1">Reset All</button>
+            <button id="clearPrev" class="ghost" style="flex:1">Clear Yesterday</button>
+          </div>
+        </label>
+
+        <p class="small-muted">Theme and font size are saved locally.  
+        "Reset All" clears all app data.  
+        "Clear Yesterday" only clears yesterday’s list.</p>
+      </div>
+    </main>
+
+    <footer class="footer small-muted">Settings are local</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  (function(){
+    const themeSelect = document.getElementById('themeSelect');
+    const fontSelect = document.getElementById('fontSelect');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearPrev = document.getElementById('clearPrev');
+
+    // initialize values
+    themeSelect.value = localStorage.getItem('theme_v1') || 'dark';
+    fontSelect.value = localStorage.getItem('font_scale_v1') || '1';
+
+    themeSelect.addEventListener('change', ()=>{
+      localStorage.setItem('theme_v1', themeSelect.value);
+      applyThemeFromStorage();
+    });
+
+    fontSelect.addEventListener('change', ()=>{
+      localStorage.setItem('font_scale_v1', fontSelect.value);
+      applyFontFromStorage();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      if(!confirm('Reset will clear all adkars and settings. Continue?')) return;
+      localStorage.removeItem('adkars_v1');
+      localStorage.removeItem('prev_uncompleted_v1');
+      localStorage.removeItem('last_reset_date_v1');
+      localStorage.removeItem('theme_v1');
+      localStorage.removeItem('font_scale_v1');
+      alert('All data cleared. Returning to Home.');
+      location.href = 'index.html';
+    });
+
+    clearPrev.addEventListener('click', ()=>{
+      localStorage.removeItem('prev_uncompleted_v1');
+      alert('Yesterday’s data cleared.');
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Add Adkar — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">AL-Adkar</div>
+      <div class="controls">
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2>Add Adkar</h2>
+      <div class="field">
+        <label>Title
+          <input id="title" type="text" />
+        </label>
+        <label>Details
+          <textarea id="details"></textarea>
+        </label>
+        <label>Category
+          <select id="category">
+            <option value="daily">Daily</option>
+            <option value="reminder">Reminder</option>
+            <option value="supplemental">Supplemental</option>
+          </select>
+        </label>
+        <label>Type
+          <select id="atype">
+            <option value="task">Task</option>
+            <option value="recite">Recite (long)</option>
+          </select>
+        </label>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="save" class="primary" style="flex:1">Save</button>
+          <a href="index.html" class="ghost" 
+             style="flex:1;text-align:center;padding:10px;border-radius:10px;
+                    text-decoration:none;color:var(--muted)">Cancel</a>
+        </div>
+      </div>
+    </main>
+
+
+    <footer class="footer small-muted">Add an adkar for today</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  (function(){
+    const title = document.getElementById('title');
+    const details = document.getElementById('details');
+    const category = document.getElementById('category');
+    const atype = document.getElementById('atype');
+    const save = document.getElementById('save');
+
+    save.addEventListener('click', ()=>{
+      const t = title.value.trim();
+      if(!t){ alert('Please provide a title'); return; }
+      const all = loadAdkars();
+      all.push({
+        id: 'a' + Date.now(),
+        title: t,
+        details: details.value.trim(),
+        date: todayStr(),
+        completed: false,
+        category: category.value || 'daily',
+        type: atype.value || 'task'
+      });
+      saveAdkars(all);
+      location.href = 'index.html';
+    });
+  })();
+  </script>
+</body>
+</html>

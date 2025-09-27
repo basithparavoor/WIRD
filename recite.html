@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Recite — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">Recite</div>
+      <div class="controls">
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2 id="rtitle">—</h2>
+      <div id="rbody" class="card">—</div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="decrement" class="ghost" style="flex:1">−</button>
+        <div id="counter" class="card" style="flex:1;text-align:center;font-weight:700">0</div>
+        <button id="increment" class="primary" style="flex:1">＋</button>
+      </div>
+
+      <p class="muted">
+        Use the counter to keep track of recitations.  
+        This page is for long adkars and supplications.
+      </p>
+    </main>
+
+    <footer class="footer small-muted">Recite page • Local-only</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  (function(){
+    function qs(key){ return new URLSearchParams(location.search).get(key); }
+    const id = qs('id');
+    const titleEl = document.getElementById('rtitle');
+    const bodyEl = document.getElementById('rbody');
+    const inc = document.getElementById('increment');
+    const dec = document.getElementById('decrement');
+    const counterEl = document.getElementById('counter');
+    let count = 0;
+
+    function render(){
+      const all = loadAdkars();
+      const it = all.find(x => x.id === id);
+      if(it){
+        titleEl.textContent = it.title;
+        bodyEl.textContent = it.details || '—';
+      } else {
+        titleEl.textContent = 'Not found';
+        bodyEl.textContent = 'This adkar was not found in storage.';
+      }
+      counterEl.textContent = String(count);
+    }
+
+    inc.addEventListener('click', ()=> { count++; render(); });
+    dec.addEventListener('click', ()=> { if(count>0) count--; render(); });
+
+    render();
+  })();
+  </script>
+</body>
+</html>

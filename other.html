@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Other Adkars — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">AL-Adkar</div>
+      <div class="controls">
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2>Other Adkars</h2>
+      <div style="margin-bottom:8px">
+        <input id="search" type="text" placeholder="Search..." 
+               style="width:100%;padding:10px;border-radius:10px;border:0;
+                      background:rgba(255,255,255,0.02);color:var(--text)">
+      </div>
+      <div id="otherList" class="list"></div>
+    </main>
+
+    <footer class="footer small-muted">Search and view your stored adkars</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  (function(){
+    const otherList = document.getElementById('otherList');
+    const search = document.getElementById('search');
+
+    function render(){
+      const all = loadAdkars();
+      // "Other" means non-daily and not completed
+      const items = all.filter(x => x.category !== 'daily' && !x.completed);
+      const q = (search.value || '').toLowerCase().trim();
+      const filtered = items.filter(x =>
+        !q || (x.title || '').toLowerCase().includes(q) || (x.details || '').toLowerCase().includes(q)
+      );
+      otherList.innerHTML = '';
+      if(filtered.length === 0){
+        otherList.innerHTML = '<div class="card"><div class="title">No other adkars found.</div></div>';
+        return;
+      }
+      for(const it of filtered){
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div>
+                        <div class="meta">${it.date} • ${it.category}</div>`;
+        el.addEventListener('click', ()=> {
+          const details = it.details || '—';
+          if(it.type === 'recite' || (details && details.length > 120)){
+            if(confirm('This looks like a recitation. Open in Recite page?')) {
+              location.href = 'recite.html?id=' + encodeURIComponent(it.id);
+              return;
+            }
+          }
+          alert(it.title + "\\n\\n" + details);
+        });
+        otherList.appendChild(el);
+      }
+    }
+
+    search.addEventListener('input', render);
+    render();
+  })();
+  </script>
+</body>
+</html>

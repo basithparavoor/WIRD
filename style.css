@@ -1,0 +1,304 @@
+/* =========================
+   AL-Adkar — styles.css
+   - Stylish dark + light palettes
+   - Solid light background (no dark bleed)
+   - Improved inputs for light theme
+   - Polished animations & transitions
+   ========================= */
+
+/* -------------------------
+   Palettes (dark + light)
+   Replace old :root / :root.light with these
+--------------------------*/
+:root{
+  /* Dark (primary) palette */
+  --bg: #081229;           /* deep indigo blue - page base */
+  --bg-2: #031026;         /* for gradient end */
+  --card: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(10,16,30,0.06));
+  --panel: rgba(255,255,255,0.03);
+  --text: #e6eef8;         /* soft off-white */
+  --muted: #9db0c8;        /* cool gray-blue */
+  --accent: linear-gradient(90deg, #7be8c5 0%, #6fb3ff 50%, #8a6bff 100%); /* aqua → sky → indigo */
+  --accent-solid: #6fb3ff; /* fallback solid color */
+  --glass: rgba(255,255,255,0.03);
+  --shadow: rgba(2,6,23,0.45);
+  --radius: 14px;
+  --font-scale: 1;
+}
+
+/* Light theme — stylish, warm & modern */
+:root.light{
+  --bg: #f7fbff;           /* airy pale sky */
+  --bg-2: #eef6ff;         /* soft gradient end */
+  --card: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  --panel: #ffffff;
+  --text: #071125;         /* deep navy */
+  --muted: #6b7280;        /* neutral muted gray */
+  --accent: linear-gradient(90deg, #4ade80 0%, #3b82f6 60%, #7c3aed 100%); /* green → blue → violet */
+  --accent-solid: #3b82f6;
+  --glass: rgba(2,6,23,0.04);
+  --shadow: rgba(11,22,40,0.06);
+  --radius: 14px;
+  --font-scale: 1;
+}
+
+/* helper for using accent color (solid fallback) */
+:root, :root.light {
+  --accent-fallback: var(--accent-solid);
+}
+
+/* -------------------------
+   Base layout & typography
+--------------------------*/
+html { font-size: calc(14px * var(--font-scale)); box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+html, body { height: 100%; }
+body{
+  margin:0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  color: var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  padding:12px;
+  transition: background 420ms ease, color 220ms ease;
+}
+
+:root.light body {
+  /* soft light background (keeps it subtle but solid) */
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+
+/* app container */
+.app{
+  width:100%;
+  max-width:420px;
+  min-height:100vh;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Topbar */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px;
+  backdrop-filter: blur(6px) saturate(120%);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: border-color 220ms ease;
+}
+:root.light .topbar { border-bottom-color: rgba(2,6,23,0.06); }
+
+.brand{
+  font-weight:700;
+  letter-spacing:0.6px;
+  font-size:1.15rem;
+}
+.controls{display:flex;gap:8px;align-items:center;}
+.icon-btn{
+  border:0;padding:8px;border-radius:12px;font-size:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:var(--text);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.12);
+  transition: transform 200ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms;
+}
+
+/* Simple nav */
+.navbar{display:flex;gap:8px;padding:8px;justify-content:space-around}
+.navbar a{flex:1;text-align:center;padding:10px;border-radius:10px;background:var(--panel);text-decoration:none;color:var(--text);font-weight:600;position:relative}
+.navbar a.active{box-shadow:0 6px 20px rgba(2,6,23,0.12);transform:translateY(-2px)}
+.navbar a::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 6px;
+  background: transparent;
+  transform-origin: left center;
+  transition: background 260ms cubic-bezier(.2,.9,.2,1), transform 260ms;
+}
+.navbar a.active::after {
+  background-image: var(--accent);
+  background-color: var(--accent-fallback);
+  transform: scaleX(1);
+}
+
+/* Views */
+.container{padding:12px;background:transparent;flex:1;display:flex;flex-direction:column;gap:8px;}
+h2{margin:4px 0 8px 0}
+.list{display:flex;flex-direction:column;gap:10px;padding-bottom:60px}
+
+/* Card */
+.card{
+  background: var(--card);
+  padding:12px;border-radius:12px;
+  box-shadow: 0 10px 30px var(--shadow);
+  display:flex;flex-direction:column;gap:8px;
+  border: 1px solid rgba(255,255,255,0.03);
+  backdrop-filter: blur(6px) saturate(110%);
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease, background-color 220ms ease;
+  will-change: transform, box-shadow;
+  overflow: hidden;
+}
+:root.light .card {
+  border: 1px solid rgba(11,22,40,0.04);
+  box-shadow: 0 8px 26px var(--shadow);
+}
+.card .meta{display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;color:var(--muted)}
+.card .title{font-weight:700;font-size:1rem}
+.card button.small{align-self:flex-end;padding:6px 8px;border-radius:8px;border:0;background:transparent;color:var(--accent-fallback)}
+.muted{color:var(--muted);font-size:0.95rem;margin-top:8px}
+
+/* hover / lift */
+.card:hover,
+.card:focus-within {
+  transform: translateY(-8px) scale(1.003);
+  box-shadow: 0 22px 46px rgba(2,6,23,0.48);
+}
+
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;padding:18px;background: linear-gradient(180deg, rgba(2,6,23,0.28), rgba(2,6,23,0.62));backdrop-filter: blur(6px);z-index:30}
+.modal.active{display:flex}
+.modal-card{width:100%;max-width:420px;background:var(--card);padding:16px;border-radius:16px;position:relative;box-shadow:0 18px 40px rgba(2,6,23,0.45);transform: translateY(10px) scale(.997);opacity:0;transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 320ms, box-shadow 300ms;}
+.modal.active .modal-card { transform: translateY(0) scale(1); opacity:1; }
+.modal-close{position:absolute;right:12px;top:12px;border:0;background:transparent;font-size:16px;color:var(--muted)}
+
+/* Buttons */
+.primary{
+  background: var(--accent-fallback);
+  background-image: var(--accent);
+  color: white;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  box-shadow: 0 10px 26px rgba(60,110,170,0.12);
+  transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms;
+}
+.primary:hover { transform: translateY(-3px); box-shadow: 0 20px 44px rgba(60,110,170,0.18); }
+.primary:active { transform: translateY(0) scale(.99); }
+
+/* Ghost */
+.ghost{background:transparent;border:0;padding:10px 12px;border-radius:10px;color:var(--muted);transition: transform 160ms}
+.ghost:hover { transform: translateY(-2px); color: var(--text); }
+
+/* Forms */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+input[type="text"], textarea, select{
+  padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  color:var(--text);width:100%;box-shadow: inset 0 -2px 10px rgba(2,6,23,0.02);
+  transition: border-color 200ms ease, box-shadow 220ms ease, background 200ms;
+}
+textarea{min-height:120px;resize:vertical}
+
+/* Light theme: make inputs clearly visible */
+:root.light input[type="text"],
+:root.light textarea,
+:root.light select {
+  background: #fff;
+  border: 1px solid rgba(9,18,35,0.06);
+  box-shadow: inset 0 -4px 18px rgba(9,18,35,0.02);
+  color: var(--text);
+}
+input[type="text"]:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-fallback);
+  box-shadow: 0 6px 26px rgba(59,130,246,0.12);
+}
+
+/* footer */
+.footer{text-align:center;padding:8px;color:var(--muted);font-size:0.9rem}
+
+/* helpers */
+.hidden{display:none}
+.small-muted{font-size:0.9rem;color:var(--muted)}
+
+/* =========================
+   Polished animations & micro-interactions
+   Appenditions for a premium feel
+   (keeps motion respectful of reduced motion prefs)
+   ========================= */
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion-scale: 0; }
+}
+:root { --motion-scale: 1; }
+
+/* subtle keyframes */
+@keyframes listIn {
+  from { opacity: 0; transform: translateY(10px) scale(.996); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes floaty {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+@keyframes press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+@keyframes pop {
+  0% { transform: scale(.99); opacity: 0.9; }
+  40% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* list children entrance */
+.list > .card {
+  animation: listIn calc(260ms * var(--motion-scale)) cubic-bezier(.2,.9,.2,1) both;
+}
+.list > .card:nth-child(1){ animation-delay: 40ms; }
+.list > .card:nth-child(2){ animation-delay: 80ms; }
+.list > .card:nth-child(3){ animation-delay: 120ms; }
+.list > .card:nth-child(4){ animation-delay: 160ms; }
+
+/* micro-interactions */
+* { transition: background-color 220ms ease-out, color 220ms ease-out, border-color 200ms ease, box-shadow 240ms ease; }
+.card { will-change: transform, box-shadow; }
+.card.floaty { animation: floaty 4s ease-in-out infinite; }
+.card.new { box-shadow: 0 20px 56px rgba(80,130,250,0.12); border: 1px solid rgba(127,178,255,0.12); animation: pop 700ms cubic-bezier(.2,.9,.2,1); }
+
+/* navbar micro */
+.navbar a { transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease; }
+.navbar a:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+
+/* icon button press */
+.icon-btn { transition: transform 200ms cubic-bezier(.2,.9,.2,1), background-color 200ms; }
+.icon-btn:active { animation: press 160ms ease; }
+
+/* primary button hover/press */
+.primary { transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms; }
+.primary:active { transform: translateY(0) scale(0.99); animation: press 140ms ease; }
+
+/* modal card entrance */
+.modal-card { transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 320ms, box-shadow 300ms; }
+
+/* accessibility: disable motion if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .list > .card, .card, .modal-card, .primary, .navbar a, .icon-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* small responsive tweaks */
+@media (max-width:420px) {
+  .brand { font-size: 1rem; }
+  .navbar a { padding: 8px; font-size: 0.95rem; }
+  .card { padding: 12px; }
+  .topbar { padding: 10px; }
+}
+
+/* end of styles.css */

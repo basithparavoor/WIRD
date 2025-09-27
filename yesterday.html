@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Yesterday — AL-Adkar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">AL-Adkar</div>
+      <div class="controls">
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <h2>Uncompleted — Yesterday</h2>
+      <div id="prevList" class="list"></div>
+      <p class="muted">This list contains uncompleted items from yesterday. It will clear on the next reset (00:00 local time).</p>
+    </main>
+
+    <footer class="footer small-muted">Local-only • No backend</footer>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+  (function(){
+    const prevList = document.getElementById('prevList');
+
+    function render(){
+      const raw = localStorage.getItem('prev_uncompleted_v1');
+      let items = [];
+      if(raw) {
+        try { items = JSON.parse(raw); } catch(e){ items = []; }
+      }
+      prevList.innerHTML = '';
+      if(items.length === 0){
+        prevList.innerHTML = '<div class="card"><div class="title">No uncompleted adkars from yesterday.</div></div>';
+        return;
+      }
+      for(const it of items){
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div>
+                        <div class="meta">${it.category} • ${it.date}</div>`;
+        // clicking shows details in simple alert (or later we can add modal)
+        el.addEventListener('click', ()=> {
+          const details = it.details || '—';
+          if(it.type === 'recite' || (details && details.length > 120)){
+            // open recite page for long ones
+            if(confirm('This looks like a recitation. Open in Recite page?')) {
+              location.href = 'recite.html?id=' + encodeURIComponent(it.id);
+              return;
+            }
+          }
+          alert(it.title + "\\n\\n" + details);
+        });
+        prevList.appendChild(el);
+      }
+    }
+
+    render();
+  })();
+  </script>
+</body>
+</html>
