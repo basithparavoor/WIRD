@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Yesterday — AL-Adkar</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .item-meta { display:flex; gap:8px; align-items:center; color:var(--muted); font-size:0.95rem; }
+    .list .card { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand">AL-Adkar</div>
+      <div class="brand">Yesterday's Uncompleted</div>
       <div class="controls">
         <a href="options.html" class="icon-btn" title="Options">☰</a>
       </div>
@@ -17,51 +21,83 @@
 
     <main class="container">
       <h2>Uncompleted — Yesterday</h2>
-      <div id="prevList" class="list"></div>
-      <p class="muted">This list contains uncompleted items from yesterday. It will clear on the next reset (00:00 local time).</p>
+      <p class="small-muted">These items were not completed yesterday and were moved here at midnight. You can add them back to today's list or delete them.</p>
+
+      <div id="yList" class="list" style="margin-top:12px"></div>
     </main>
 
-    <footer class="footer small-muted">Local-only • No backend</footer>
+    <footer class="footer small-muted">Local-only • Items clear from here when you delete or add back to today</footer>
   </div>
 
   <script src="common.js"></script>
   <script>
   (function(){
-    const prevList = document.getElementById('prevList');
+    const listEl = document.getElementById('yList');
+
+    function loadPrev(){
+      try{
+        const raw = localStorage.getItem(AdkarUtils.LS_KEYS ? AdkarUtils.LS_KEYS.prev : 'prev_uncompleted_v1');
+        return raw ? JSON.parse(raw) : [];
+      }catch(e){ return []; }
+    }
 
     function render(){
-      const raw = localStorage.getItem('prev_uncompleted_v1');
-      let items = [];
-      if(raw) {
-        try { items = JSON.parse(raw); } catch(e){ items = []; }
-      }
-      prevList.innerHTML = '';
-      if(items.length === 0){
-        prevList.innerHTML = '<div class="card"><div class="title">No uncompleted adkars from yesterday.</div></div>';
+      const prev = loadPrev();
+      listEl.innerHTML = '';
+      if(prev.length === 0){
+        listEl.innerHTML = '<div class="card"><div class="title">No uncompleted items from yesterday.</div></div>';
         return;
       }
-      for(const it of items){
+      for(let i = prev.length - 1; i >= 0; i--){
+        const it = prev[i];
         const el = document.createElement('div');
         el.className = 'card';
-        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div>
-                        <div class="meta">${it.category} • ${it.date}</div>`;
-        // clicking shows details in simple alert (or later we can add modal)
-        el.addEventListener('click', ()=> {
-          const details = it.details || '—';
-          if(it.type === 'recite' || (details && details.length > 120)){
-            // open recite page for long ones
-            if(confirm('This looks like a recitation. Open in Recite page?')) {
-              location.href = 'recite.html?id=' + encodeURIComponent(it.id);
-              return;
-            }
-          }
-          alert(it.title + "\\n\\n" + details);
+        const timeHtml = it.time ? `<span class="small-muted">${it.time}</span>` : `<span class="small-muted">No time</span>`;
+        el.innerHTML = `<div style="flex:1">
+                          <div class="title">${escapeHtml(it.title)}</div>
+                          <div class="item-meta">${timeHtml} • ${escapeHtml(it.category || '')}</div>
+                          <div class="small-muted" style="margin-top:6px">${escapeHtml(it.details || '')}</div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                          <div style="display:flex;gap:8px">
+                            <button class="primary" data-add="${it.id}">Add to Today</button>
+                            <button class="ghost" data-delete="${it.id}">Delete</button>
+                          </div>
+                        </div>`;
+        // Add to today: copy into adkars list with today's date
+        el.querySelector('[data-add]')?.addEventListener('click', ()=>{
+          const all = loadAdkars();
+          const copy = Object.assign({}, it, {
+            id: 'a' + Date.now(),
+            date: AdkarUtils.todayStr(),
+            completed: false
+          });
+          all.push(copy);
+          saveAdkars(all);
+          // remove from prev
+          const prevList = loadPrev().filter(x => x.id !== it.id);
+          if(prevList.length) localStorage.setItem(AdkarUtils.LS_KEYS.prev, JSON.stringify(prevList));
+          else localStorage.removeItem(AdkarUtils.LS_KEYS.prev);
+          alert('Added to today.');
+          render();
         });
-        prevList.appendChild(el);
+
+        // Delete from yesterday list
+        el.querySelector('[data-delete]')?.addEventListener('click', ()=>{
+          if(!confirm('Delete this item from yesterday?')) return;
+          const prevList = loadPrev().filter(x => x.id !== it.id);
+          if(prevList.length) localStorage.setItem(AdkarUtils.LS_KEYS.prev, JSON.stringify(prevList));
+          else localStorage.removeItem(AdkarUtils.LS_KEYS.prev);
+          render();
+        });
+
+        listEl.appendChild(el);
       }
     }
 
+    // init
     render();
+    window.addEventListener('storage', render);
   })();
   </script>
 </body>

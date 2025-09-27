@@ -9,7 +9,7 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand">AL-Adkar</div>
+      <div class="brand">Add Adkar</div>
       <div class="controls">
         <a href="options.html" class="icon-btn" title="Options">☰</a>
       </div>
@@ -37,17 +37,39 @@
             <option value="recite">Recite (long)</option>
           </select>
         </label>
+
+        <div class="card" style="gap:8px">
+          <div style="font-weight:700">Schedule</div>
+          <div class="small-muted">Choose days this adkar applies. Leave “Every day” for daily.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+            <label><input type="checkbox" name="days" value="every" checked /> Every day</label>
+            <label><input type="checkbox" name="days" value="mon" /> Mon</label>
+            <label><input type="checkbox" name="days" value="tue" /> Tue</label>
+            <label><input type="checkbox" name="days" value="wed" /> Wed</label>
+            <label><input type="checkbox" name="days" value="thu" /> Thu</label>
+            <label><input type="checkbox" name="days" value="fri" /> Fri</label>
+            <label><input type="checkbox" name="days" value="sat" /> Sat</label>
+            <label><input type="checkbox" name="days" value="sun" /> Sun</label>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <label style="flex:1">Time (optional)
+              <input id="time" type="time" />
+            </label>
+            <label style="display:flex;gap:8px;align-items:center;margin-top:8px">
+              <input id="notify" type="checkbox" /> Notify at time
+            </label>
+          </div>
+        </div>
+
         <div style="display:flex;gap:8px;margin-top:8px">
           <button id="save" class="primary" style="flex:1">Save</button>
-          <a href="index.html" class="ghost" 
-             style="flex:1;text-align:center;padding:10px;border-radius:10px;
-                    text-decoration:none;color:var(--muted)">Cancel</a>
+          <a href="options.html" class="ghost" style="flex:1;text-align:center;padding:10px;border-radius:10px;text-decoration:none;color:var(--muted)">Cancel</a>
         </div>
       </div>
     </main>
 
-
-    <footer class="footer small-muted">Add an adkar for today</footer>
+    <footer class="footer small-muted">Scheduled adkars appear on Home when due</footer>
   </div>
 
   <script src="common.js"></script>
@@ -57,24 +79,56 @@
     const details = document.getElementById('details');
     const category = document.getElementById('category');
     const atype = document.getElementById('atype');
+    const time = document.getElementById('time');
+    const notify = document.getElementById('notify');
     const save = document.getElementById('save');
 
-    save.addEventListener('click', ()=>{
+    const dayBoxes = Array.from(document.querySelectorAll('input[name="days"]'));
+    function getDays(){
+      const vals = dayBoxes.filter(b=>b.checked).map(b=>b.value);
+      if(vals.includes('every')) return ['every'];
+      return vals.length ? vals : ['every'];
+    }
+    // Mutual exclusivity for “every”
+    dayBoxes.forEach(b=>{
+      b.addEventListener('change', ()=>{
+        if(b.value==='every' && b.checked){
+          dayBoxes.forEach(x=>{ if(x.value!=='every') x.checked=false; });
+        } else if(b.value!=='every' && b.checked){
+          const every = dayBoxes.find(x=>x.value==='every'); if(every) every.checked=false;
+        } else if(dayBoxes.filter(x=>x.checked).length===0){
+          const every = dayBoxes.find(x=>x.value==='every'); if(every) every.checked=true;
+        }
+      });
+    });
+
+    save.addEventListener('click', async ()=>{
       const t = title.value.trim();
       if(!t){ alert('Please provide a title'); return; }
       const all = loadAdkars();
-      all.push({
+      const item = {
         id: 'a' + Date.now(),
         title: t,
         details: details.value.trim(),
-        date: todayStr(),
+        date: todayStr(),          // created/assigned date
         completed: false,
         category: category.value || 'daily',
-        type: atype.value || 'task'
-      });
+        type: atype.value || 'task',
+        days: getDays(),           // ['every'] or weekdays
+        time: time.value || '',    // "HH:MM" or ''
+        notify: !!notify.checked
+      };
+      all.push(item);
       saveAdkars(all);
-      location.href = 'index.html';
+
+      if(notify.checked){
+        const ok = await AdkarUtils.requestNotifyPermission();
+        if(!ok) alert('Notifications not enabled by the browser.');
+      }
+
+      location.href = 'options.html';
     });
+
   })();
   </script>
 </body>

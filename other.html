@@ -3,29 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Other Adkars — AL-Adkar</title>
+  <title>Library — AL-Adkar</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand">AL-Adkar</div>
+      <div class="brand">Adkar Library</div>
       <div class="controls">
         <a href="options.html" class="icon-btn" title="Options">☰</a>
       </div>
     </header>
 
     <main class="container">
-      <h2>Other Adkars</h2>
+      <h2>Library</h2>
       <div style="margin-bottom:8px">
-        <input id="search" type="text" placeholder="Search..." 
+        <input id="search" type="text" placeholder="Search library..." 
                style="width:100%;padding:10px;border-radius:10px;border:0;
                       background:rgba(255,255,255,0.02);color:var(--text)">
       </div>
       <div id="otherList" class="list"></div>
     </main>
 
-    <footer class="footer small-muted">Search and view your stored adkars</footer>
+    <footer class="footer small-muted">Browse library — add items to today's list</footer>
   </div>
 
   <script src="common.js"></script>
@@ -36,32 +36,54 @@
 
     function render(){
       const all = loadAdkars();
-      // "Other" means non-daily and not completed
-      const items = all.filter(x => x.category !== 'daily' && !x.completed);
       const q = (search.value || '').toLowerCase().trim();
-      const filtered = items.filter(x =>
-        !q || (x.title || '').toLowerCase().includes(q) || (x.details || '').toLowerCase().includes(q)
+      const filtered = all.filter(x =>
+        (x.title||'').toLowerCase().includes(q) ||
+        (x.details||'').toLowerCase().includes(q)
       );
       otherList.innerHTML = '';
       if(filtered.length === 0){
-        otherList.innerHTML = '<div class="card"><div class="title">No other adkars found.</div></div>';
+        otherList.innerHTML = '<div class="card"><div class="title">No library entries found.</div></div>';
         return;
       }
       for(const it of filtered){
         const el = document.createElement('div');
         el.className = 'card';
-        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div>
-                        <div class="meta">${it.date} • ${it.category}</div>`;
-        el.addEventListener('click', ()=> {
-          const details = it.details || '—';
-          if(it.type === 'recite' || (details && details.length > 120)){
-            if(confirm('This looks like a recitation. Open in Recite page?')) {
-              location.href = 'recite.html?id=' + encodeURIComponent(it.id);
-              return;
-            }
-          }
-          alert(it.title + "\\n\\n" + details);
+        const timeHtml = it.time ? `<span>${it.time}</span>` : `<span class="small-muted">No time</span>`;
+        const daysHtml = (it.days && it.days.length && !it.days.includes('every')) ? '(' + it.days.join(',') + ')' : '(Every day)';
+        el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+                          <div>
+                            <div class="title">${escapeHtml(it.title)}</div>
+                            <div class="small-muted">${escapeHtml(it.details || '')}</div>
+                            <div class="small-muted" style="margin-top:6px">${timeHtml} • ${daysHtml}</div>
+                          </div>
+                          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                            <button class="primary" data-add="${it.id}">Add to Today</button>
+                            <button class="ghost" data-view="${it.id}">View</button>
+                          </div>
+                        </div>`;
+        // Add to today
+        el.querySelector('[data-add]')?.addEventListener('click', (e)=>{
+          const src = all.find(x=>x.id === it.id);
+          if(!src) return;
+          const copy = Object.assign({}, src, {
+            id: 'a' + Date.now(),
+            date: todayStr(),
+            completed: false
+          });
+          const list = loadAdkars();
+          list.push(copy);
+          saveAdkars(list);
+          alert('Added to today.');
         });
+        // View
+        el.querySelector('[data-view]')?.addEventListener('click', ()=>{
+          if(it.type === 'recite' || (it.details && it.details.length > 120)){
+            if(confirm('Open in Recite page?')) { location.href = 'recite.html?id=' + encodeURIComponent(it.id); return; }
+          }
+          alert(it.title + "\n\n" + (it.details || '—'));
+        });
+
         otherList.appendChild(el);
       }
     }

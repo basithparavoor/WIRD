@@ -5,92 +5,205 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Adkar — Home</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* small page overrides for home */
+    .time-pill { font-weight:700; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.03); }
+    .badge.due { background: linear-gradient(90deg,#f59e0b,#ef4444); color:#fff; padding:6px 8px; border-radius:8px; font-weight:700; }
+    .meta { display:flex; gap:8px; align-items:center; color:var(--muted); font-size:0.95rem; }
+  </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
       <div class="brand">AL-Adkar</div>
       <div class="controls">
-    <a href="options.html" class="icon-btn" title="Options">☰</a>
+        <a href="options.html" class="icon-btn" title="Options">☰</a>
       </div>
     </header>
 
     <main class="container">
       <h2>Uncompleted Adkars — Today</h2>
-      <div id="homeList" class="list"></div>
-      <p class="muted">Tap an Adkar to view details. Long recitations have a "Recite" option that opens a dedicated recite page.</p>
-    </main>
 
-    <div id="detailModal" class="modal" role="dialog" aria-hidden="true">
-      <div class="modal-card">
-        <button class="modal-close" id="closeModal">✕</button>
-        <h3 id="detailTitle"></h3>
-        <p id="detailBody"></p>
-        <div class="modal-actions">
-          <button id="openRecite" class="primary hidden">Open Recite</button>
-          <button id="markComplete" class="primary">Mark as complete</button>
-        </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button id="requestNotify" class="ghost">Enable Notifications</button>
+        <div class="small-muted" style="margin-left:auto">Tap an item to view details</div>
       </div>
-    </div>
+
+      <div id="homeList" class="list"></div>
+
+      <p class="muted" style="margin-top:12px">Items scheduled only for specific weekdays will appear on those days. Items without time are unscheduled and shown last.</p>
+    </main>
 
     <footer class="footer small-muted">Local-only • No backend • Smartphone-first</footer>
   </div>
 
+  <!-- Detail modal (inserted by script) -->
   <script src="common.js"></script>
   <script>
-  // Home page logic
   (function(){
+    // UI elements
     const homeList = document.getElementById('homeList');
+    const requestNotifyBtn = document.getElementById('requestNotify');
+
+    // Insert modal markup
+    const modalHtml = `
+      <div id="detailModal" class="modal" role="dialog" aria-hidden="true">
+        <div class="modal-card">
+          <button class="modal-close" id="closeModal">✕</button>
+          <h3 id="detailTitle"></h3>
+          <p id="detailBody" class="small-muted"></p>
+          <div id="detailMeta" class="small-muted" style="margin-top:8px"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="openRecite" class="primary hidden" style="flex:1">Open Recite</button>
+            <button id="markComplete" class="primary" style="flex:1">Mark as complete</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
     const detailModal = document.getElementById('detailModal');
+    const closeModal = document.getElementById('closeModal');
     const detailTitle = document.getElementById('detailTitle');
     const detailBody = document.getElementById('detailBody');
-    const closeModal = document.getElementById('closeModal');
+    const detailMeta = document.getElementById('detailMeta');
     const markComplete = document.getElementById('markComplete');
     const openRecite = document.getElementById('openRecite');
-    let currentId = null;
 
+    let currentItemId = null;
+
+    // Render home list
     function render(){
       const all = loadAdkars();
-      const today = todayStr();
-      const items = all.filter(x => !x.completed && x.date === today);
+      const today = AdkarUtils.todayStr();
+      const now = new Date();
+      const nowMin = AdkarUtils.minutesNow(now);
+
+      // show items that:
+      // - are not completed
+      // - either have date === today OR are scheduled for today by days (isForToday)
+      const items = all.filter(it => {
+        if(it.completed) return false;
+        // either explicitly created/added for today (date === today)
+        if(it.date === today) return true;
+        // else if it has schedule (days) that includes today
+        return AdkarUtils.isForToday(it, now);
+      });
+
+      // sort by time (items without time go last)
+      items.sort((a,b) => {
+        const am = AdkarUtils.timeToMinutes(a.time) ?? 99999;
+        const bm = AdkarUtils.timeToMinutes(b.time) ?? 99999;
+        return am - bm;
+      });
+
       homeList.innerHTML = '';
-      if(items.length===0){
-        homeList.innerHTML = '<div class="card"><div class="title">No uncompleted adkars for today — good!</div></div>';
+      if(items.length === 0){
+        homeList.innerHTML = '<div class="card"><div class="title">No uncompleted adkars for today — good job!</div></div>';
         return;
       }
+
       for(const it of items){
-        const el = document.createElement('div'); el.className='card';
-        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div><div class="meta">${it.category}</div>`;
-        el.addEventListener('click', ()=> openItem(it));
-        homeList.appendChild(el);
+        const li = document.createElement('div');
+        li.className = 'card';
+        const tmin = AdkarUtils.timeToMinutes(it.time);
+        const due = (tmin !== null && nowMin >= tmin);
+        const timeHtml = it.time ? `<span class="time-pill">${it.time}</span>` : `<span class="small-muted">No time</span>`;
+        const dueHtml = due ? `<span class="badge due">Due</span>` : '';
+        li.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="flex:1">
+              <div class="title">${escapeHtml(it.title)}</div>
+              <div class="meta">${timeHtml} • <span>${escapeHtml(it.category || '')}</span> ${dueHtml}</div>
+            </div>
+            <div style="margin-left:12px; display:flex;flex-direction:column;gap:8px">
+              <button class="ghost" data-id="${it.id}">Details</button>
+            </div>
+          </div>
+        `;
+        // clicking the card or details button opens modal
+        li.addEventListener('click', (e) => {
+          // avoid firing when clicking the inner button handled below
+          if(e.target && e.target.matches('button')) return;
+          openItem(it);
+        });
+        li.querySelector('button[data-id]')?.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          openItem(it);
+        });
+        homeList.appendChild(li);
       }
     }
 
+    // open modal for item
     function openItem(it){
-      currentId = it.id;
+      currentItemId = it.id;
       detailTitle.textContent = it.title;
       detailBody.textContent = it.details || '—';
-      if(it.type === 'recite' || (it.details && it.details.length>120)){
+      detailMeta.innerHTML = `
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div><strong>Category:</strong> ${escapeHtml(it.category || '')}</div>
+          <div><strong>Type:</strong> ${escapeHtml(it.type || '')}</div>
+          <div><strong>Days:</strong> ${(it.days && !it.days.includes('every')) ? it.days.join(', ') : 'Every day'}</div>
+          <div><strong>Time:</strong> ${it.time || '—'}</div>
+        </div>
+      `;
+      // show recite button for type recite
+      if(it.type === 'recite'){
         openRecite.classList.remove('hidden');
-        openRecite.onclick = ()=> {
-          // open recite page with id
-          location.href = 'recite.html?id=' + encodeURIComponent(it.id);
-        };
+        openRecite.onclick = ()=> { location.href = 'recite.html?id=' + encodeURIComponent(it.id); };
       } else {
         openRecite.classList.add('hidden');
+        openRecite.onclick = null;
       }
+
+      // show modal
       detailModal.classList.add('active');
+      detailModal.setAttribute('aria-hidden','false');
     }
 
-    closeModal.addEventListener('click', ()=> { detailModal.classList.remove('active'); currentId=null; });
-    markComplete.addEventListener('click', ()=>{
-      if(!currentId) return;
-      const all = loadAdkars();
-      const it = all.find(x=>x.id===currentId);
-      if(it){ it.completed = true; saveAdkars(all); render(); detailModal.classList.remove('active'); }
+    closeModal.addEventListener('click', ()=>{
+      detailModal.classList.remove('active');
+      detailModal.setAttribute('aria-hidden','true');
+      currentItemId = null;
     });
 
+    // mark as complete
+    markComplete.addEventListener('click', ()=>{
+      if(!currentItemId) return;
+      const list = loadAdkars();
+      const idx = list.findIndex(x => x.id === currentItemId);
+      if(idx === -1) return;
+      list[idx].completed = true;
+      saveAdkars(list);
+      alert('Marked as complete.');
+      detailModal.classList.remove('active');
+      detailModal.setAttribute('aria-hidden','true');
+      currentItemId = null;
+      render();
+    });
+
+    // request notification permission button
+    requestNotifyBtn.addEventListener('click', async ()=>{
+      const ok = await AdkarUtils.requestNotifyPermission();
+      if(ok){
+        alert('Notifications enabled. The app will fire reminders while open.');
+        AdkarUtils.startNotifyTicker();
+      } else {
+        alert('Notifications not enabled.');
+      }
+    });
+
+    // auto-start notification ticker if permission already granted
+    if(Notification && Notification.permission === 'granted'){
+      AdkarUtils.startNotifyTicker();
+    }
+
+    // initial render
     render();
+
+    // re-render every 60s to update "Due" badges, or when storage changes
+    setInterval(render, 60*1000);
+    window.addEventListener('storage', render);
   })();
   </script>
 </body>

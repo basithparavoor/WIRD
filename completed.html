@@ -5,22 +5,33 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Completed — AL-Adkar</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .completed-badge { background: linear-gradient(90deg,#10b981,#3b82f6); color:#fff; padding:6px 8px; border-radius:8px; font-weight:700; }
+    .item-meta { display:flex; gap:8px; align-items:center; color:var(--muted); font-size:0.95rem; }
+    .list .card { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand">AL-Adkar</div>
+      <div class="brand">Completed</div>
       <div class="controls">
         <a href="options.html" class="icon-btn" title="Options">☰</a>
       </div>
     </header>
 
     <main class="container">
-      <h2>Completed Adkars — Today</h2>
-      <div id="completedList" class="list"></div>
-      <p class="muted">Completed items are stored for today and clear at 00:00 local time.</p>
-    </main>
+      <h2>Completed — Today</h2>
 
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button id="clearCompleted" class="ghost">Clear Completed</button>
+        <div class="small-muted" style="margin-left:auto">Completed clears automatically at 12:00 AM</div>
+      </div>
+
+      <div id="completedList" class="list"></div>
+
+      <p class="muted" style="margin-top:12px">You can undo a completion from the item menu — items marked complete will be removed from Home and shown here.</p>
+    </main>
 
     <footer class="footer small-muted">Local-only • No backend</footer>
   </div>
@@ -28,38 +39,71 @@
   <script src="common.js"></script>
   <script>
   (function(){
-    const completedList = document.getElementById('completedList');
+    const listEl = document.getElementById('completedList');
+    const clearBtn = document.getElementById('clearCompleted');
 
     function render(){
       const all = loadAdkars();
-      // completed items are those with completed === true
-      const items = all.filter(x => x.completed);
-      completedList.innerHTML = '';
+      const today = AdkarUtils.todayStr();
+      // completed items that belong to today (date === today) OR completed and scheduled for today
+      const items = all.filter(it => it.completed && it.date === today)
+                       .sort((a,b) => {
+                         const am = AdkarUtils.timeToMinutes(a.time) ?? 99999;
+                         const bm = AdkarUtils.timeToMinutes(b.time) ?? 99999;
+                         return am - bm;
+                       });
+
+      listEl.innerHTML = '';
       if(items.length === 0){
-        completedList.innerHTML = '<div class="card"><div class="title">No completed adkars for today.</div></div>';
+        listEl.innerHTML = '<div class="card"><div class="title">No completed adkars yet today.</div></div>';
         return;
       }
+
       for(const it of items){
         const el = document.createElement('div');
         el.className = 'card';
-        el.innerHTML = `<div class="title">${escapeHtml(it.title)}</div>
-                        <div class="meta">${it.date} • ${it.category}</div>`;
-        // show details on click
-        el.addEventListener('click', ()=> {
-          const details = it.details || '—';
-          if(it.type === 'recite' || (details && details.length > 120)){
-            if(confirm('Open in Recite page?')) {
-              location.href = 'recite.html?id=' + encodeURIComponent(it.id);
-              return;
-            }
-          }
-          alert(it.title + "\\n\\n" + details);
+        const timeHtml = it.time ? `<span>${it.time}</span>` : `<span class="small-muted">No time</span>`;
+        el.innerHTML = `<div style="flex:1">
+                          <div class="title">${escapeHtml(it.title)}</div>
+                          <div class="item-meta">${timeHtml} • ${escapeHtml(it.category||'')}</div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                          <div class="completed-badge">Completed</div>
+                          <div style="display:flex;gap:8px">
+                            <button class="ghost" data-view="${it.id}">View</button>
+                            <button class="ghost" data-undo="${it.id}">Undo</button>
+                          </div>
+                        </div>`;
+        el.querySelector('[data-view]')?.addEventListener('click', ()=>{
+          alert(it.title + "\n\n" + (it.details || '—'));
         });
-        completedList.appendChild(el);
+        el.querySelector('[data-undo]')?.addEventListener('click', ()=>{
+          if(!confirm('Mark this item as uncompleted?')) return;
+          const list = loadAdkars();
+          const idx = list.findIndex(x => x.id === it.id);
+          if(idx === -1) return;
+          list[idx].completed = false;
+          saveAdkars(list);
+          render();
+          alert('Item moved back to uncompleted.');
+        });
+        listEl.appendChild(el);
       }
     }
 
+    clearBtn.addEventListener('click', ()=>{
+      if(!confirm('Clear all completed items for today?')) return;
+      // remove completed items whose date === today
+      const today = AdkarUtils.todayStr();
+      const list = loadAdkars().filter(x => !(x.completed && x.date === today));
+      saveAdkars(list);
+      render();
+    });
+
+    // init
     render();
+    // re-render when storage changes (another tab could update)
+    window.addEventListener('storage', render);
   })();
   </script>
 </body>
